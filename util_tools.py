@@ -49,16 +49,15 @@ class encoder():
     #### class object for encoding peptide sequence into something the machine can understand ####
     """
     input is just how you would like to encode the peptides currently only allowed for :
-    how = "onehot" or "blosum62"
+    how = "onehot" or "blosum62" or "reducedProp"
 
     to be added: "reducedProp"
 
-    Fancier stuff in the future: ML-based learned embeddings
+    For the future: ML-based learned embeddings
 
     """
     def __init__(self, how="onehot"):
         self.encoder_method = how
-        self.alphabet = "ACDEFGHIKLMNPQRSTVWY"
         self.how = how
         
         if how not in ["onehot","blosum62"]:
@@ -66,6 +65,7 @@ class encoder():
         #### define the translator "vocabulary" to use for encoding simple encoding
         if how == "onehot":
         ##### simple one-hot encoding
+            self.alphabet = "ACDEFGHIKLMNPQRSTVWY"
             self._translator = {x:xi for xi,x in enumerate(self.alphabet)}
         elif how == "blosum62":
         ##### using blosum62 similarity matrix
@@ -77,10 +77,18 @@ class encoder():
                         vector = x.split()
                         alphabet[vector[0]] = [int(x) for x in vector[1::]]
             self._translator = alphabet
+            self.alphabet = vector
         elif how == "reducedProp":
-        ##### set of simple amino acid properties encoding 
-        ##### to be done 
+            df = pd.read_csv("aa_properties.csv",index_col=0)
+            index = df.index
+            alphabet = {x:list(df.loc[x,:]) for x in index}
+            self._translator = alphabet
+            # self.alphabet = vector
+        elif how == "bert":
             None
+        elif how == "unirep":
+            None
+            
         
     def onehot(self,sequenceIn):            
         mat = np.zeros([20,len(sequenceIn)])
@@ -97,7 +105,10 @@ class encoder():
         return mat
     
     def reducedProp(self,sequenceIn):
-        None
+        mat = np.zeros([6,len(sequenceIn)])
+        for xi,x in enumerate(sequenceIn):
+            mat[:,xi]=self._translator[x]
+        return mat
     
     def BERTembeding(self, sequenceIn):
         None
@@ -110,14 +121,15 @@ class encoder():
             return self.onehot(sequence)
         elif self.how == "blosum62":
             return self.blosum(sequence)
+        elif self.how == "reducedProp":
+            return self.reducedProp(sequence)
         
 
 
 if __name__ == "__main__":
     #### test the function before moving on to the notebook ###
-    blosum = encoder("onehot")
-    sequences = ["AGCSTHCTHSTHCY","AGCSTSTHCYADSRE"]    
+    blosum = encoder("reducedProp")
+    sequences = ["AGCSTHCTHSTHCY"]    
     [print(blosum.encode(x)) for x in sequences]
 # training, testing = get_HLA_A_02_01()
-
 # print(Counter(testing.loc[:,"Measurement type"]))
