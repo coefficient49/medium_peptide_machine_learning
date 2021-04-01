@@ -60,7 +60,7 @@ class encoder():
         self.encoder_method = how
         self.how = how
         
-        if how not in ["onehot","blosum62"]:
+        if how not in ["onehot","blosum62","reducedProp"]:
             print("you have entered an incorrect embedding option, currently, this script only take \"onehot\" or \"blosum62\"")
         #### define the translator "vocabulary" to use for encoding simple encoding
         if how == "onehot":
@@ -126,10 +126,10 @@ class encoder():
         
 
 
-if __name__ == "__main__":
-    #### test the function before moving on to the notebook ###
-    blosum = encoder("reducedProp")
-    sequences = ["AGCSTHCTHSTHCY"]    
-    [print(blosum.encode(x)) for x in sequences]
+# if __name__ == "__main__":
+#     #### test the function before moving on to the notebook ###
+#     blosum = encoder("reducedProp")
+#     sequences = ["AGCSTHCTHSTHCY"]    
+#     [print(blosum.encode(x)) for x in sequences]
 # training, testing = get_HLA_A_02_01()
 # print(Counter(testing.loc[:,"Measurement type"]))
