@@ -60,8 +60,8 @@ class encoder():
         self.encoder_method = how
         self.how = how
         
-        if how not in ["onehot","blosum62","reducedProp"]:
-            print("you have entered an incorrect embedding option, currently, this script only take \"onehot\" or \"blosum62\"")
+        if how not in ["onehot","blosum62","reducedProp","embedding"]:
+            print("you have entered an incorrect embedding option, currently, this script only take \"onehot\" or \"blosum62\" or \"embedding\" ")
         #### define the translator "vocabulary" to use for encoding simple encoding
         if how == "onehot":
         ##### simple one-hot encoding
@@ -84,6 +84,9 @@ class encoder():
             alphabet = {x:list(df.loc[x,:]) for x in index}
             self._translator = alphabet
             # self.alphabet = vector
+        elif how == "embedding":
+            alphabet = 'ACDEFGHIKLMNPQRSTVWY' 
+            self._translator = dict(zip(alphabet, range(len(alphabet))))
         elif how == "bert":
             None
         elif how == "unirep":
@@ -110,6 +113,12 @@ class encoder():
             mat[:,xi]=self._translator[x]
         return mat
     
+    def embedding(self,sequenceIn):
+        mat = np.zeros([1,len(sequenceIn)])
+        for xi,x in enumerate(sequenceIn):
+            mat[0,xi]=self._translator[x]
+        return mat
+    
     def BERTembeding(self, sequenceIn):
         None
     
@@ -123,13 +132,15 @@ class encoder():
             return self.blosum(sequence)
         elif self.how == "reducedProp":
             return self.reducedProp(sequence)
-        
+        elif self.how == "embedding":
+            return self.embedding(sequence)
 
 
-# if __name__ == "__main__":
-#     #### test the function before moving on to the notebook ###
-#     blosum = encoder("reducedProp")
-#     sequences = ["AGCSTHCTHSTHCY"]    
-#     [print(blosum.encode(x)) for x in sequences]
+if __name__ == "__main__":
+    #### test the function before moving on to the notebook ###
+    blosum = encoder("embedding")
+    sequences = ["AGCSTHCTHSTHCY"]    
+    [print(blosum.encode(x)) for x in sequences]
 # training, testing = get_HLA_A_02_01()
+
 # print(Counter(testing.loc[:,"Measurement type"]))
