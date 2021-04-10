@@ -5,13 +5,14 @@ train_set = "https://raw.githubusercontent.com/pcpLiu/DeepSeqPan/master/dataset/
 protein_sequence = ""
 ## referenced paper: https://www.nature.com/articles/s41598-018-37214-1 ##
 
+
 import pandas as pd
 import numpy as np
 from glob import glob
 from collections import Counter
 
 def get_training_data():
-    ## check directory for file, if not present, download a new copy.
+    ## check directory for data set file, if not present, download a new copy.
     if glob("training.csv"):
         print("local training file found... loading...")
         df = pd.read_csv("./training.csv")
@@ -33,6 +34,7 @@ def get_testing_data():
     return df
 
 def get_data():
+    ## quick function to load data.
     dfTraining = get_training_data()
     dfTesting = get_testing_data()
     return (dfTraining, dfTesting)
@@ -49,11 +51,9 @@ class encoder():
     #### class object for encoding peptide sequence into something the machine can understand ####
     """
     input is just how you would like to encode the peptides currently only allowed for :
-    how = "onehot" or "blosum62" or "reducedProp"
+    how = "onehot" or "blosum62" or "reducedProp" or ""embedding"
 
-    to be added: "reducedProp"
-
-    For the future: ML-based learned embeddings
+    For the future: ML-based learned embeddings like BERTs and UNIREPs
 
     """
     def __init__(self, how="onehot"):
@@ -61,7 +61,7 @@ class encoder():
         self.how = how
         
         if how not in ["onehot","blosum62","reducedProp","embedding"]:
-            print("you have entered an incorrect embedding option, currently, this script only take \"onehot\" or \"blosum62\" or \"embedding\" ")
+            print("Currently, this script only take \"onehot\" or \"blosum62\" or \"reducedProp\" or  \"embedding\" ")
         #### define the translator "vocabulary" to use for encoding simple encoding
         if how == "onehot":
         ##### simple one-hot encoding
@@ -85,11 +85,15 @@ class encoder():
             self._translator = alphabet
             # self.alphabet = vector
         elif how == "embedding":
+            ## th is is useful for RNNs
             alphabet = 'ACDEFGHIKLMNPQRSTVWY' 
             self._translator = dict(zip(alphabet, range(len(alphabet))))
+
         elif how == "bert":
+            ## WIP
             None
         elif how == "unirep":
+            ## WIP
             None
             
         
@@ -120,9 +124,11 @@ class encoder():
         return mat
     
     def BERTembeding(self, sequenceIn):
+    	# to be done
         None
     
     def UNIREPembedding(self, sequenceIn):
+    	# to be done
         None
     
     def encode(self,sequence):
