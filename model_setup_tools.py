@@ -24,7 +24,6 @@ from tensorflow import keras
 from tensorflow.keras.layers import *
 from tensorflow.keras.callbacks import *
 from collections import Counter
-from tensorflow.keras import backend as K
 
 
 
@@ -87,9 +86,8 @@ def build_model(encoder_type = "blosum62", conv_layers = True, rnn= False):
     return model
 
 def SPRCC(y_true, y_pred):
-    ## thi 
-
     ## was going to use the winsorization, but commented out for now, more thoughts needed
+    # from tensorflow.keras import backend as K
 
     ##silencing this for now by commenting it out.
      
@@ -153,7 +151,7 @@ def inequaility_loss(y_true, y_pred):
 def seeding_for_reproducibility():
     ## that the name of the function said...
     seed(123454566)
-    tensorflow.random.set_seed(123454566)
+    tf.random.set_seed(123454566)
 
 ######### model parameters ##############
 epochs = 5000
@@ -165,8 +163,7 @@ optimizer = "nadam"
 def train_test_model(model_type = "blosum62",conv=True, rnn=False,epochs = 100, batch_size = 16, patience=2, optimizer= "nadam",data_dict=None):
 
     ## setting up the train val data set for now, not touching the testing data just yet. Going to call "Val data" as "Test data" for now.
-    if (X == None) or (Y == None):
-        print("training data mission!")
+
     if model_type == "blosum62":
         ## a little clunky now, will rewrite this part to pass in the correct data with the correct shape.
         X = np.array(data_dict[model_type]).reshape(-1,24,9,1)
@@ -189,7 +186,7 @@ def train_test_model(model_type = "blosum62",conv=True, rnn=False,epochs = 100, 
     es = EarlyStopping(monitor='val_loss',mode="min",patience=patience) ## stop early call back
     now = datetime.now()
     experiment_ID = now.strftime("%y%m%d.%Hh%Mm%Ss") ## using date string as exp_ID
-    os.makedir(experiment_ID)
+    os.mkdir("./experiments/"+experiment_ID)
     mc = ModelCheckpoint('./experiments/{}/best_{}_conv={}_model.h5'.format(experiment_ID,model_type,conv),monitor='val_loss', mode='min', save_best_only=True) ## sving best model callback
     [X_train, X_test, y_train, y_test]=train_test_split(X,Y,test_size=0.2,random_state=10)
     history = model.fit(X_train,y_train,batch_size=batch_size,epochs = epochs, validation_split=0.1,callbacks=[es,mc])
@@ -201,6 +198,8 @@ def plot_model(history=False,model=None,X_test=None,y_test=None,experiment_ID=No
         sns.lineplot(data=pd.DataFrame(history.history).reset_index(),x="index",y="loss")
         sns.lineplot(data=pd.DataFrame(history.history).reset_index(),x="index",y="val_loss")
         plt.legend(["loss","val_loss"])
+        plt.savefig("./experiments/{}/training_history.png".format(experiment_ID))
+
     y_pred = model.predict(X_test)
     ## transform y_test for inquality loss, but for now, we silence it
 #     bat1 = y_test*(y_test<=1)
@@ -211,4 +210,4 @@ def plot_model(history=False,model=None,X_test=None,y_test=None,experiment_ID=No
     sns.scatterplot(x=y_test,y=y_pred.squeeze())
     R, pv = spearmanr(y_test,y_pred.squeeze())
     plt.title("SRCC: {0:0.4f}".format(R))
-    plt.savefig("'./experiments/{}/SPRCC.png".format(experiment_ID))
+    plt.savefig("./experiments/{}/SPRCC.png".format(experiment_ID))
